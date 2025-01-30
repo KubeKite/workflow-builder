@@ -129,7 +129,7 @@ export default function WorkflowControls({ onAddNode }: WorkflowControlsProps) {
       <SheetTrigger asChild>
         <Button
           size="icon"
-          className="absolute top-4 left-4 h-8 w-8 rounded-full"
+          className="h-8 w-8 rounded-full bg-background shadow-md hover:shadow-lg transition-shadow"
         >
           <Plus className="h-4 w-4" />
         </Button>

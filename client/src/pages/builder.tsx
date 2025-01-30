@@ -38,8 +38,8 @@ export default function Builder() {
   const { toast } = useToast();
   const [name, setName] = useState(workflow?.name || "");
   const [description, setDescription] = useState(workflow?.description || "");
-  const [nodes, setNodes] = useState(workflow?.definition.nodes || []);
-  const [edges, setEdges] = useState(workflow?.definition.edges || []);
+  const [nodes, setNodes] = useState<any[]>(workflow?.definition?.nodes || []);
+  const [edges, setEdges] = useState<any[]>(workflow?.definition?.edges || []);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -60,47 +60,20 @@ export default function Builder() {
       if (params.source === params.target) {
         return;
       }
-
       setEdges((eds) => addEdge({ ...params, type: "workflow" }, eds));
     },
     [setEdges]
   );
 
-  const validateWorkflow = () => {
-    if (!name.trim()) {
-      toast({
-        title: "Error",
-        description: "Workflow name is required",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    if (nodes.length === 0) {
-      toast({
-        title: "Error",
-        description: "Add at least one node to the workflow",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    const triggerNodes = nodes.filter((node) => node.type === "trigger");
-    if (triggerNodes.length === 0) {
-      toast({
-        title: "Error",
-        description: "Workflow must have at least one trigger node",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    return true;
-  };
-
   const saveWorkflow = async () => {
     try {
-      if (!validateWorkflow()) {
+      // Only validate when saving
+      if (!name.trim()) {
+        toast({
+          title: "Error",
+          description: "Please provide a workflow name",
+          variant: "destructive",
+        });
         return;
       }
 
@@ -149,7 +122,7 @@ export default function Builder() {
         </div>
       </Card>
 
-      <Card className="h-[calc(100vh-16rem)]">
+      <Card className="relative h-[calc(100vh-16rem)]">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -162,26 +135,30 @@ export default function Builder() {
         >
           <Background />
           <Controls />
-          <WorkflowControls
-            onAddNode={(type, data) => {
-              const position = {
-                x: Math.random() * 500,
-                y: Math.random() * 500,
-              };
-              const newNode = {
-                id: `${type}-${Date.now()}`,
-                type,
-                position,
-                data: {
-                  ...data,
-                  label: data.label,
-                  description: data.description,
-                  config: data.config,
-                },
-              };
-              setNodes((nds) => [...nds, newNode]);
-            }}
-          />
+          <div className="absolute left-4 top-4 z-[100]">
+            <WorkflowControls
+              onAddNode={(type, data) => {
+                const centerX = window.innerWidth / 3;
+                const centerY = window.innerHeight / 3;
+                const position = {
+                  x: centerX + Math.random() * 100,
+                  y: centerY + Math.random() * 100,
+                };
+                const newNode = {
+                  id: `${type}-${Date.now()}`,
+                  type,
+                  position,
+                  data: {
+                    ...data,
+                    label: data.label,
+                    description: data.description,
+                    config: data.config,
+                  },
+                };
+                setNodes((nds) => [...nds, newNode]);
+              }}
+            />
+          </div>
           <SuggestionsPanel workflowId={id} />
         </ReactFlow>
       </Card>
