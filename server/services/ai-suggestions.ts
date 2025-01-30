@@ -11,8 +11,32 @@ interface OptimizationSuggestion {
   rationale: string;
 }
 
+// Fallback suggestions when AI service is unavailable
+const fallbackSuggestions: OptimizationSuggestion[] = [
+  {
+    type: 'performance',
+    suggestion: 'Consider adding parallel execution for independent tasks',
+    rationale: 'Independent tasks can be executed simultaneously to reduce overall workflow execution time.'
+  },
+  {
+    type: 'reliability',
+    suggestion: 'Add error handling and retry mechanisms',
+    rationale: 'Implement proper error handling and retries to make the workflow more resilient to temporary failures.'
+  },
+  {
+    type: 'security',
+    suggestion: 'Review data access permissions',
+    rationale: 'Ensure each node only has access to the data it needs to operate.'
+  }
+];
+
 export async function analyzeWorkflow(workflow: Workflow): Promise<OptimizationSuggestion[]> {
   try {
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn('OpenAI API key not configured, using fallback suggestions');
+      return fallbackSuggestions;
+    }
+
     const prompt = `Analyze this workflow and provide optimization suggestions:
 
 Workflow Name: ${workflow.name}
@@ -41,10 +65,10 @@ Format each suggestion with a type (performance/reliability/security/design), th
     });
 
     if (!response.choices[0]?.message?.content) {
-      throw new Error('No suggestions generated');
+      console.warn('No AI suggestions generated, using fallback suggestions');
+      return fallbackSuggestions;
     }
 
-    // Parse the response and extract suggestions
     const suggestions = response.choices[0].message.content
       .split('\n\n')
       .filter(s => s.trim())
@@ -59,9 +83,17 @@ Format each suggestion with a type (performance/reliability/security/design), th
         };
       });
 
-    return suggestions;
-  } catch (error) {
+    return suggestions.length > 0 ? suggestions : fallbackSuggestions;
+  } catch (error: any) {
     console.error('Error analyzing workflow:', error);
-    throw new Error('Failed to generate workflow suggestions');
+
+    // Handle rate limit errors specifically
+    if (error?.status === 429) {
+      throw new Error('AI service is currently busy. Please try again in a few minutes.');
+    }
+
+    // For other errors, use fallback suggestions
+    console.warn('Using fallback suggestions due to error');
+    return fallbackSuggestions;
   }
 }

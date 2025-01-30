@@ -145,9 +145,10 @@ export function setupWorkflows(app: Express) {
 
       const suggestions = await analyzeWorkflow(workflow);
       res.json(suggestions);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error getting workflow suggestions:', error);
-      res.status(500).send("Failed to generate suggestions");
+      // Send the specific error message to the client
+      res.status(error?.status === 429 ? 429 : 500).send(error.message || "Failed to generate suggestions");
     }
   });
 }
