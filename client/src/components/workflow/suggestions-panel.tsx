@@ -29,10 +29,23 @@ const typeIcons = {
   design: "🎨",
 };
 
+async function fetchSuggestions(workflowId: string): Promise<Suggestion[]> {
+  const response = await fetch(`/api/workflows/${workflowId}/suggestions`, {
+    credentials: "include",
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(errorText || "Failed to load suggestions");
+  }
+  return response.json();
+}
+
 export default function SuggestionsPanel({ workflowId }: SuggestionsPanelProps) {
   const { data: suggestions, isLoading, error } = useQuery<Suggestion[]>({
     queryKey: [`/api/workflows/${workflowId}/suggestions`],
+    queryFn: () => (workflowId ? fetchSuggestions(workflowId) : Promise.resolve([])),
     enabled: !!workflowId,
+    retry: false,
   });
 
   return (
@@ -63,7 +76,14 @@ export default function SuggestionsPanel({ workflowId }: SuggestionsPanelProps) 
               <Alert variant="destructive">
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>
-                  Failed to load suggestions. Please try again later.
+                  {error instanceof Error ? error.message : "Failed to load suggestions. Please try again later."}
+                </AlertDescription>
+              </Alert>
+            ) : !workflowId ? (
+              <Alert>
+                <AlertTitle>No Workflow Selected</AlertTitle>
+                <AlertDescription>
+                  Save your workflow first to get AI-powered suggestions
                 </AlertDescription>
               </Alert>
             ) : suggestions?.length === 0 ? (

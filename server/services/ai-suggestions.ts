@@ -14,7 +14,7 @@ interface OptimizationSuggestion {
 export async function analyzeWorkflow(workflow: Workflow): Promise<OptimizationSuggestion[]> {
   try {
     const prompt = `Analyze this workflow and provide optimization suggestions:
-    
+
 Workflow Name: ${workflow.name}
 Description: ${workflow.description}
 Definition: ${JSON.stringify(workflow.definition, null, 2)}
@@ -28,7 +28,7 @@ Provide specific suggestions for improving this workflow in terms of:
 Format each suggestion with a type (performance/reliability/security/design), the suggestion itself, and a brief rationale.`;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4",
+      model: "gpt-3.5-turbo",
       messages: [
         { 
           role: "system", 
@@ -40,14 +40,18 @@ Format each suggestion with a type (performance/reliability/security/design), th
       max_tokens: 1000,
     });
 
+    if (!response.choices[0]?.message?.content) {
+      throw new Error('No suggestions generated');
+    }
+
     // Parse the response and extract suggestions
-    const suggestions = response.choices[0].message.content!
+    const suggestions = response.choices[0].message.content
       .split('\n\n')
       .filter(s => s.trim())
       .map(suggestion => {
         const [type, ...rest] = suggestion.split(':').map(s => s.trim());
         const [suggestionText, rationale] = rest.join(':').split('Rationale:').map(s => s.trim());
-        
+
         return {
           type: type.toLowerCase() as OptimizationSuggestion['type'],
           suggestion: suggestionText,
