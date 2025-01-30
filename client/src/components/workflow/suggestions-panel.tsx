@@ -36,62 +36,64 @@ export default function SuggestionsPanel({ workflowId }: SuggestionsPanelProps) 
   });
 
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button
-          size="icon"
-          variant="outline"
-          className="absolute top-4 right-4 h-8 w-8 rounded-full"
-        >
-          <Lightbulb className="h-4 w-4" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-[400px] sm:w-[540px]">
-        <SheetHeader>
-          <SheetTitle>AI Suggestions</SheetTitle>
-          <SheetDescription>
-            Optimization suggestions for your workflow
-          </SheetDescription>
-        </SheetHeader>
-        <ScrollArea className="h-[calc(100vh-8rem)] mt-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-40">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : error ? (
-            <Alert variant="destructive">
-              <AlertTitle>Error</AlertTitle>
-              <AlertDescription>
-                Failed to load suggestions. Please try again later.
-              </AlertDescription>
-            </Alert>
-          ) : suggestions?.length === 0 ? (
-            <Alert>
-              <AlertTitle>No Suggestions</AlertTitle>
-              <AlertDescription>
-                Your workflow looks good! No optimization suggestions at this time.
-              </AlertDescription>
-            </Alert>
-          ) : (
-            <div className="space-y-4">
-              {suggestions?.map((suggestion, index) => (
-                <Alert key={index}>
-                  <AlertTitle className="flex items-center gap-2">
-                    <span>{typeIcons[suggestion.type]}</span>
-                    {suggestion.type.charAt(0).toUpperCase() + suggestion.type.slice(1)} Suggestion
-                  </AlertTitle>
-                  <AlertDescription className="mt-2 space-y-2">
-                    <p>{suggestion.suggestion}</p>
-                    <p className="text-sm text-muted-foreground border-t pt-2 mt-2">
-                      {suggestion.rationale}
-                    </p>
-                  </AlertDescription>
-                </Alert>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-      </SheetContent>
-    </Sheet>
+    <div className="absolute top-4 right-4 z-50">
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button
+            size="icon"
+            variant="outline"
+            className="h-8 w-8 rounded-full bg-background shadow-md hover:shadow-lg transition-shadow"
+          >
+            <Lightbulb className="h-4 w-4" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="right" className="w-[400px] sm:w-[540px]">
+          <SheetHeader>
+            <SheetTitle>AI Suggestions</SheetTitle>
+            <SheetDescription>
+              Optimization suggestions for your workflow
+            </SheetDescription>
+          </SheetHeader>
+          <ScrollArea className="h-[calc(100vh-8rem)] mt-4">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-40">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : error ? (
+              <Alert variant="destructive">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                  Failed to load suggestions. Please try again later.
+                </AlertDescription>
+              </Alert>
+            ) : suggestions?.length === 0 ? (
+              <Alert>
+                <AlertTitle>No Suggestions</AlertTitle>
+                <AlertDescription>
+                  Your workflow looks good! No optimization suggestions at this time.
+                </AlertDescription>
+              </Alert>
+            ) : (
+              <div className="space-y-4">
+                {suggestions?.map((suggestion, index) => (
+                  <Alert key={index}>
+                    <AlertTitle className="flex items-center gap-2">
+                      <span>{typeIcons[suggestion.type]}</span>
+                      {suggestion.type.charAt(0).toUpperCase() + suggestion.type.slice(1)} Suggestion
+                    </AlertTitle>
+                    <AlertDescription className="mt-2 space-y-2">
+                      <p>{suggestion.suggestion}</p>
+                      <p className="text-sm text-muted-foreground border-t pt-2 mt-2">
+                        {suggestion.rationale}
+                      </p>
+                    </AlertDescription>
+                  </Alert>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 }
