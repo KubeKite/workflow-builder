@@ -20,6 +20,7 @@ import { useWorkflow } from "@/hooks/use-workflow";
 import { TriggerNode, ActionNode, LogicNode } from "@/components/workflow/node-types";
 import { WorkflowEdge } from "@/components/workflow/edge-types";
 import WorkflowControls from "@/components/workflow/controls";
+import SuggestionsPanel from "@/components/workflow/suggestions-panel";
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -56,12 +57,10 @@ export default function Builder() {
 
   const onConnect = useCallback(
     (params: Connection) => {
-      // Prevent connecting to the same node
       if (params.source === params.target) {
         return;
       }
 
-      // Add the edge with type
       setEdges((eds) => addEdge({ ...params, type: "workflow" }, eds));
     },
     [setEdges]
@@ -183,6 +182,7 @@ export default function Builder() {
               setNodes((nds) => [...nds, newNode]);
             }}
           />
+          <SuggestionsPanel workflowId={id} />
         </ReactFlow>
       </Card>
     </div>

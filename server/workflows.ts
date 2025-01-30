@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { db } from "@db";
 import { workflows, workflowRuns } from "@db/schema";
 import { eq } from "drizzle-orm";
+import { analyzeWorkflow } from "./services/ai-suggestions";
 
 export function setupWorkflows(app: Express) {
   // Get all workflows for the current user
@@ -121,5 +122,32 @@ export function setupWorkflows(app: Express) {
     }, 5000);
 
     res.json(run);
+  });
+
+  // New route for getting workflow suggestions
+  app.get("/api/workflows/:id/suggestions", async (req, res) => {
+    if (!req.user) {
+      return res.status(401).send("Not authenticated");
+    }
+
+    try {
+      const workflow = await db.query.workflows.findFirst({
+        where: eq(workflows.id, parseInt(req.params.id)),
+      });
+
+      if (!workflow) {
+        return res.status(404).send("Workflow not found");
+      }
+
+      if (workflow.userId !== req.user.id) {
+        return res.status(403).send("Not authorized");
+      }
+
+      const suggestions = await analyzeWorkflow(workflow);
+      res.json(suggestions);
+    } catch (error) {
+      console.error('Error getting workflow suggestions:', error);
+      res.status(500).send("Failed to generate suggestions");
+    }
   });
 }
