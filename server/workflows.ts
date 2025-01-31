@@ -4,8 +4,6 @@ import { workflows, workflowRuns } from "@db/schema";
 import { eq } from "drizzle-orm";
 import { analyzeWorkflow } from "./services/ai-suggestions";
 
-const fallbackSuggestions = []; // Add fallbackSuggestions variable
-
 export function setupWorkflows(app: Express) {
   // Get all workflows for the current user
   app.get("/api/workflows", async (req, res) => {
@@ -126,7 +124,7 @@ export function setupWorkflows(app: Express) {
     res.json(run);
   });
 
-  // New route for getting workflow suggestions
+  // Get workflow suggestions
   app.get("/api/workflows/:id/suggestions", async (req, res) => {
     if (!req.user) {
       return res.status(401).send("Not authenticated");
@@ -149,8 +147,8 @@ export function setupWorkflows(app: Express) {
       res.json(suggestions);
     } catch (error: any) {
       console.error('Error getting workflow suggestions:', error);
-      // Always return suggestions, even in case of errors
-      res.json(fallbackSuggestions);
+      const suggestions = await analyzeWorkflow(workflow!);
+      res.json(suggestions);
     }
   });
 }
