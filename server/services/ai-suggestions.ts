@@ -27,6 +27,11 @@ const fallbackSuggestions: OptimizationSuggestion[] = [
     type: 'security',
     suggestion: 'Review data access permissions',
     rationale: 'Ensure each node only has access to the data it needs to operate.'
+  },
+  {
+    type: 'design',
+    suggestion: 'Optimize workflow structure',
+    rationale: 'Consider grouping related tasks and minimizing dependencies between nodes.'
   }
 ];
 
@@ -87,13 +92,8 @@ Format each suggestion with a type (performance/reliability/security/design), th
   } catch (error: any) {
     console.error('Error analyzing workflow:', error);
 
-    // Handle rate limit errors specifically
-    if (error?.status === 429) {
-      throw new Error('AI service is currently busy. Please try again in a few minutes.');
-    }
-
-    // For other errors, use fallback suggestions
-    console.warn('Using fallback suggestions due to error');
+    // For any error (including rate limits), use fallback suggestions
+    console.warn('Using fallback suggestions due to error:', error.message);
     return fallbackSuggestions;
   }
 }

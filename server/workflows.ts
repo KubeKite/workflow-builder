@@ -4,6 +4,8 @@ import { workflows, workflowRuns } from "@db/schema";
 import { eq } from "drizzle-orm";
 import { analyzeWorkflow } from "./services/ai-suggestions";
 
+const fallbackSuggestions = []; // Add fallbackSuggestions variable
+
 export function setupWorkflows(app: Express) {
   // Get all workflows for the current user
   app.get("/api/workflows", async (req, res) => {
@@ -147,8 +149,8 @@ export function setupWorkflows(app: Express) {
       res.json(suggestions);
     } catch (error: any) {
       console.error('Error getting workflow suggestions:', error);
-      // Send the specific error message to the client
-      res.status(error?.status === 429 ? 429 : 500).send(error.message || "Failed to generate suggestions");
+      // Always return suggestions, even in case of errors
+      res.json(fallbackSuggestions);
     }
   });
 }
